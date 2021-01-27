@@ -8,13 +8,14 @@ namespace OOP_RGR
     class GraviObj
     {
         public int Mass { get; private set; }
-        public float[] Loc { get; private set; }
-        public float[] Speed { get; private set; }
+        public double[] Loc { get; private set; }
+        public double[] Speed { get; private set; }
         public bool deleting;
         public int Rad { get; private set; }
+        public bool Star;
 
 
-        public void changeAll(float[] d)
+        public void changeAll(double[] d)
         {
             Speed[0] += d[0];
             Speed[1] += d[1];
@@ -22,42 +23,64 @@ namespace OOP_RGR
             Loc[1] += Speed[1];
         }
 
-        public void changeAll(float dx, float dy)
+        public void changeAll(double dx, double dy)
         {
             Speed[0] += dx;
             Speed[1] += dy;
             Loc[0] += Speed[0];
             Loc[1] += Speed[1];
         }
-        public void changeSpeed(float[] d)
+        public void changeSpeed(double[] d)
+        {
+            Speed[0] += d[0];
+            Speed[1] += d[1];
+        }
+        public void changeAbsSpeed(double[] d)
         {
             Speed[0] = d[0];
             Speed[1] = d[1];
         }
-        public void changeLoc(float[] d)
+        public void changeLoc(double[] d)
         {
             Loc[0] += d[0];
             Loc[1] += d[1];
         }
 
+        public void move()
+        {
+            Loc[0] += Speed[0];
+            Loc[1] += Speed[1];
+        }
+
         public void changeMass(int _mass)
         {
             Mass += _mass;
-            Rad = (int)(Math.Sqrt(Mass)) * 3;
+            if (Star)
+                Rad = (int)(Math.Sqrt(Mass / 100)) * 3;
+            else
+                Rad = (int)(Math.Sqrt(Mass)) * 3;
         }
 
         public void paint(Graphics g)
         {
-            g.FillEllipse(new SolidBrush(Color.Black), Loc[0] - Rad, Loc[1] - Rad, Rad * 2, Rad * 2);
+            Color c;
+            if (Star)
+                c = Color.Yellow;
+            else
+                c = Color.Brown;
+            g.FillEllipse(new SolidBrush(c), (float)(Loc[0] - Rad), (float)(Loc[1] - Rad), Rad * 2, Rad * 2);
         }
 
-        public GraviObj(int _mass, int x, int y, int dx, int dy)
+        public GraviObj(int _mass, double x, double y, double dx, double dy, bool _star)
         {
             Mass = _mass;
-            Loc = new float[2] { x, y};
-            Speed = new float[2] { dx, dy};
+            Loc = new double[2] { x, y};
+            Speed = new double[2] { dx, dy};
             deleting = false;
             Rad = (int)(Math.Sqrt(Mass)) * 3;
+            Star = _star;
+            if(Star)
+                Mass *= 100;
         }
     }
 

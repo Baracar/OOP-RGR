@@ -21,17 +21,14 @@ namespace OOP_RGR
             massCounter.Value = 10;
         }
 
-        float G = 1000;
+        float G = 100;
         private void timer1_Tick(object sender, EventArgs e)
         {
-        //To:
             foreach (GraviObj i in GraviSys)
             {
                 if (i.Loc[0] > 10000 || i.Loc[0] < -10000 || i.Loc[1] > 10000 || i.Loc[1] < -10000)
                 {
                     i.deleting = true;
-                    //GraviSys.Remove(i);
-                    //goto To;
                 }
             }
             GraviSys.RemoveAll(j => j.deleting);
@@ -42,14 +39,16 @@ namespace OOP_RGR
                     {
                         if (i == j)
                             continue;
-                        float r = (i.Loc[1] - j.Loc[1]) * (i.Loc[1] - j.Loc[1]) + (i.Loc[0] - j.Loc[0]) * (i.Loc[0] - j.Loc[0]);
+                        double r = (i.Loc[1] - j.Loc[1]) * (i.Loc[1] - j.Loc[1]) + (i.Loc[0] - j.Loc[0]) * (i.Loc[0] - j.Loc[0]);
                         if(r < (i.Rad + j.Rad)* (i.Rad + j.Rad))
                         {
                             j.deleting = true;
-                            float[] vec = new float[2] { 0, 0 };
+                            if (j.Star)
+                                i.Star = true;
+                            double[] vec = new double[2] { 0, 0 };
                             vec[0] = (i.Mass * i.Speed[0] + j.Mass * j.Speed[0]) / (i.Mass + j.Mass);
                             vec[1] = (i.Mass * i.Speed[1] + j.Mass * j.Speed[1]) / (i.Mass + j.Mass);
-                            i.changeSpeed(vec);
+                            i.changeAbsSpeed(vec);
                             vec[0] = Math.Abs(i.Loc[0] - j.Loc[0]) * j.Mass / (i.Mass + j.Mass);
                             vec[1] = Math.Abs(i.Loc[1] - j.Loc[1]) * j.Mass / (i.Mass + j.Mass);
                             i.changeLoc(vec);
@@ -60,7 +59,7 @@ namespace OOP_RGR
             GraviSys.RemoveAll(j => j.deleting);
             foreach (GraviObj i in GraviSys)
             {
-                float[] vec = new float[2] { 0, 0};
+                double[] vec = new double[2] { 0, 0};
                 foreach (GraviObj j in GraviSys)
                 {
                     if (i != j)
@@ -70,12 +69,16 @@ namespace OOP_RGR
                         label1.Text = a.ToString();
                         label2.Text = (i.Loc[0] - j.Loc[0]).ToString();
                         label3.Text = Math.Sqrt(r).ToString();
-                        vec[0] = (int)(G * a * (j.Loc[0] - i.Loc[0]) / Math.Sqrt(r));
-                        vec[1] = (int)(G * a * (j.Loc[1] - i.Loc[1]) / Math.Sqrt(r));
+                        vec[0] += (float)(G * a * (j.Loc[0] - i.Loc[0]) / Math.Sqrt(r));
+                        vec[1] += (float)(G * a * (j.Loc[1] - i.Loc[1]) / Math.Sqrt(r));
                     }
 
                 }
-                i.changeAll(vec);
+                i.changeSpeed(vec);
+            }
+            foreach (GraviObj i in GraviSys)
+            {
+                i.move();
             }
             Refresh();
         }
@@ -85,14 +88,13 @@ namespace OOP_RGR
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
-            //if (GraviSys.Count != 0)
             foreach (GraviObj i in GraviSys)
             {
                 i.paint(e.Graphics);
             }
         }
 
-        int x0 = 0, y0 = 0;
+        double x0 = 0, y0 = 0;
 
         private void Form1_MouseDown(object sender, MouseEventArgs e)
         {
@@ -102,7 +104,23 @@ namespace OOP_RGR
 
         private void Form1_MouseUp(object sender, MouseEventArgs e)
         {
-            GraviSys.Add(new GraviObj(10 * (int)massCounter.Value, x0, y0, (e.X - x0) / 10, (e.Y - y0) / 10));
+            if (orbitCheckBox.Checked)
+            {
+                GraviObj star = GraviSys.Find(x => x.Star);
+                double x = e.X - star.Loc[0];
+                double y = e.Y - star.Loc[1];
+                double V = G * star.Mass / Math.Sqrt(x * x + y * y);
+                double t = x;
+                x = -y;
+                y = t;
+
+                t = Math.Sqrt(V / (x * x + y * y));
+                x *= t;
+                y *= t;
+                GraviSys.Add(new GraviObj(10 * (int)massCounter.Value, e.X, e.Y, x, y, starCheckBox.Checked));
+            }
+            else
+                GraviSys.Add(new GraviObj(10 * (int)massCounter.Value, x0, y0, (e.X - x0) / 10, (e.Y - y0) / 10, starCheckBox.Checked));
         }
     }
 }
