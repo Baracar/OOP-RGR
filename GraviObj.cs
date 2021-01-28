@@ -61,14 +61,17 @@ namespace OOP_RGR
                 Rad = (int)(Math.Sqrt(Mass)) * 3;
         }
 
-        public void paint(Graphics g)
+        public void paint(Graphics g, double camShiftX = 0, double camShiftY = 0, double camSkale = 0)
         {
             Color c;
             if (Star)
                 c = Color.Yellow;
             else
                 c = Color.Brown;
-            g.FillEllipse(new SolidBrush(c), (float)(Loc[0] - Rad), (float)(Loc[1] - Rad), Rad * 2, Rad * 2);
+            float x = (float)((Loc[0] + camShiftX - Rad) * camSkale);
+            float y = (float)((Loc[1] + camShiftY - Rad) * camSkale);
+            float r = (float)(Rad * 2 * camSkale);
+            g.FillEllipse(new SolidBrush(c), x, y, r, r);
         }
 
         public GraviObj(int _mass, double x, double y, double dx, double dy, bool _star)
