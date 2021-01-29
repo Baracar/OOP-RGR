@@ -88,6 +88,8 @@ namespace OOP_RGR
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
+            //e.Graphics.DrawLine(new Pen(Color.Black, 3), this.Width / 2, 0, this.Width / 2, this.Height);
+            //e.Graphics.DrawLine(new Pen(Color.Black, 3), 0, this.Height / 2, this.Width, this.Height / 2);
             foreach (GraviObj i in GraviSys)
             {
                 i.paint(e.Graphics, camShiftX, camShiftY, camSkale);
@@ -110,8 +112,8 @@ namespace OOP_RGR
         {
             if (camShifting)
             {
-                camShiftX -= (x0 - e.X) * camSkale;
-                camShiftY -= (y0 - e.Y) * camSkale;
+                camShiftX -= (x0 - e.X) / camSkale;
+                camShiftY -= (y0 - e.Y) / camSkale;
                 x0 = e.X;
                 y0 = e.Y;
             }
@@ -120,9 +122,17 @@ namespace OOP_RGR
         private void Form1_MouseWheel(object sender, MouseEventArgs e)
         {
             if (e.Delta >= 0)
+            {
+                camShiftX -= this.Width / 2 / 11 / camSkale;
+                camShiftY -= this.Height / 2 / 11 / camSkale;
                 camSkale *= 1.1;
-            else 
+            }
+            else
+            {
+                camShiftX += this.Width / 2 / 10 / camSkale;
+                camShiftY += this.Height / 2 / 10 / camSkale;
                 camSkale /= 1.1;
+            }
         }
 
         private void Form1_MouseUp(object sender, MouseEventArgs e)
@@ -131,9 +141,17 @@ namespace OOP_RGR
             {
                 if (orbitCheckBox.Checked)
                 {
+                    double x, y;
                     GraviObj star = GraviSys.Find(x => x.Star);
-                    double x = e.X - star.Loc[0];
-                    double y = e.Y - star.Loc[1];
+                    if (star == null)
+                    {
+                        x = x0 / camSkale - camShiftX;
+                        y = y0 / camSkale - camShiftY;
+                        GraviSys.Add(new GraviObj(10 * (int)massCounter.Value, x, y, (e.X - x0) / 10, (e.Y - y0) / 10, starCheckBox.Checked));
+                        return;
+                    }
+                    x = e.X / camSkale - camShiftX - star.Loc[0];
+                    y = e.Y / camSkale - camShiftY - star.Loc[1];
                     double V = G * star.Mass / Math.Sqrt(x * x + y * y);
 
                     double t = x; x = -y; y = t;
@@ -141,10 +159,14 @@ namespace OOP_RGR
                     t = Math.Sqrt(V / (x * x + y * y));
                     x *= t;
                     y *= t;
-                    GraviSys.Add(new GraviObj(10 * (int)massCounter.Value, e.X, e.Y, x, y, starCheckBox.Checked));
+                    GraviSys.Add(new GraviObj(10 * (int)massCounter.Value, e.X / camSkale - camShiftX, e.Y / camSkale - camShiftY, x, y, starCheckBox.Checked));
                 }
                 else
-                    GraviSys.Add(new GraviObj(10 * (int)massCounter.Value, x0, y0, (e.X - x0) / 10, (e.Y - y0) / 10, starCheckBox.Checked));
+                {
+                    double x = x0 / camSkale - camShiftX;
+                    double y = y0 / camSkale - camShiftY;
+                    GraviSys.Add(new GraviObj(10 * (int)massCounter.Value, x, y, (e.X - x0) / 10, (e.Y - y0) / 10, starCheckBox.Checked));
+                }
             }
             else if (e.Button == MouseButtons.Right)
             {
